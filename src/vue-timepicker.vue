@@ -72,6 +72,7 @@ export default {
     appendToBody: { type: Boolean, default: false },
 
     manualInput: { type: Boolean, default: false },
+    uniqueList: { type: Boolean, default: false },
     manualInputTimeout: { type: [ Number, String ] },
     hideDropdown: { type: Boolean, default: false },
     fixedDropdownButton: { type: Boolean, default: false },
@@ -2087,7 +2088,23 @@ export default {
       <!-- Common Keyboard Support: less event listeners -->
       <template v-if="!advancedKeyboard">
         <template v-for="column in columnsSequence">
-          <ul v-if="column === 'hour'" :key="column" class="hours" @scroll="keepFocusing">
+          <ul v-if="uniqueList && column === 'hour'" :key="column" class="hours" @scroll="keepFocusing">
+            <li class="hint" v-text="hourLabelText"></li>
+            <template v-for="(hr, hIndex) in hours">
+              <template v-if="!opts.hideDisabledHours || (opts.hideDisabledHours && !isDisabled('hour', hr))">
+                <template v-for="(m, mIndex) in minutes">
+                  <li :key="`${hIndex}_${mIndex}`"
+                      :class="{active: hour === hr && minute === m}"
+                      :disabled="isDisabled('hour', hr) || isDisabled('minute', m)"
+                      :data-key="hr"
+                      v-text="hr+':'+m"
+                      @click="select('hour', hr); select('minute', m)">
+                  </li>
+                </template>
+              </template>
+            </template>
+          </ul>
+          <ul v-if="!uniqueList && column === 'hour'" :key="column" class="hours" @scroll="keepFocusing">
             <li class="hint" v-text="hourLabelText"></li>
             <template v-for="(hr, hIndex) in hours">
               <li v-if="!opts.hideDisabledHours || (opts.hideDisabledHours && !isDisabled('hour', hr))"
@@ -2099,7 +2116,7 @@ export default {
                   @click="select('hour', hr)"></li>
             </template>
           </ul>
-          <ul v-if="column === 'minute'" :key="column" class="minutes" @scroll="keepFocusing">
+          <ul v-if="!uniqueList && column === 'minute'" :key="column" class="minutes" @scroll="keepFocusing">
             <li class="hint" v-text="minuteLabelText"></li>
             <template v-for="(m, mIndex) in minutes">
               <li v-if="!opts.hideDisabledMinutes || (opts.hideDisabledMinutes && !isDisabled('minute', m))"
@@ -2111,7 +2128,7 @@ export default {
                   @click="select('minute', m)"></li>
             </template>
           </ul>
-          <ul v-if="column === 'second'" :key="column" class="seconds" @scroll="keepFocusing">
+          <ul v-if="!uniqueList && column === 'second'" :key="column" class="seconds" @scroll="keepFocusing">
             <li class="hint" v-text="secondLabelText"></li>
             <template v-for="(s, sIndex) in seconds">
               <li v-if="!opts.hideDisabledSeconds || (opts.hideDisabledSeconds && !isDisabled('second', s))"
@@ -2123,7 +2140,7 @@ export default {
                   @click="select('second', s)"></li>
             </template>
           </ul>
-          <ul v-if="column === 'apm'" :key="column" class="apms" @scroll="keepFocusing">
+          <ul v-if="!uniqueList && column === 'apm'" :key="column" class="apms" @scroll="keepFocusing">
             <li class="hint" v-text="apmLabelText"></li>
             <template v-for="(a, aIndex) in apms">
               <li v-if="!opts.hideDisabledHours || (opts.hideDisabledHours && !isDisabled('apm', a))"
