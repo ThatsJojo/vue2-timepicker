@@ -35,6 +35,8 @@ export default {
     hourRange: { type: Array },
     minuteRange: { type: Array },
     secondRange: { type: Array },
+    uniqueListStartTime: { type: Object, default: () => ({hour: 0, minute: 0, second: 0}) },
+    uniqueListEndTime: { type: Object, default: () => ({hour: 23, minute: 59, second: 59}) },
 
     hideDisabledHours: { type: Boolean, default: false },
     hideDisabledMinutes: { type: Boolean, default: false },
@@ -599,10 +601,31 @@ export default {
       } else if (oldLength && oldLength >= 1) {
         this.$emit('error', [])
       }
+    },
+    minute () {
+      this.$emit('minute-changed', this)
+    },
+    hour () {
+      this.$emit('hour-changed', this)
+    },
+    second () {
+      this.$emit('second-changed', this)
     }
   },
 
   methods: {
+    isValidTime(hour, minute, second) {
+      let invalidHour =  hour < this.uniqueListStartTime.hour || hour > this.uniqueListEndTime.hour
+
+      let invalidMinute = ((hour == this.uniqueListStartTime.hour && minute < this.uniqueListStartTime.minute) ||
+                          (hour == this.uniqueListEndTime.hour && minute > this.uniqueListEndTime.minute))
+      
+      let invalidSecond = ((hour == this.uniqueListStartTime.hour && minute == this.uniqueListStartTime.minute && second < this.uniqueListStartTime.second) ||
+                          (hour == this.uniqueListEndTime.hour && minute == this.uniqueListEndTime.minute && second > this.uniqueListEndTime.second))
+      
+      return !(invalidHour || invalidMinute || invalidSecond)
+    },
+
     formatValue (token, i) {
       if (!this.isNumber(i)) { return '' }
       i = +i
@@ -2093,7 +2116,7 @@ export default {
             <template v-for="(hr, hIndex) in hours">
               <template v-if="!opts.hideDisabledHours || (opts.hideDisabledHours && !isDisabled('hour', hr))">
                 <template v-for="(m, mIndex) in minutes">
-                  <li :key="`${hIndex}_${mIndex}`"
+                  <li v-if="isValidTime( hr, m, 0)" :key="`${hIndex}_${mIndex}`"
                       :class="{active: hour === hr && minute === m}"
                       :disabled="isDisabled('hour', hr) || isDisabled('minute', m)"
                       :data-key="hr"
