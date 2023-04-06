@@ -2121,7 +2121,13 @@ export default {
         <template v-for="column in columnsSequence">
           <ul v-if="uniqueList && column === 'hour'" :key="column" class="hours" @scroll="keepFocusing">
             <li class="hint" v-text="hourLabelText"></li>
-            <li v-if="showUniqueListStartTime" v-text="uniqueListStartTime.hour + ':' + uniqueListStartTime.minute"></li>
+            <li v-if="showUniqueListStartTime" 
+              :class="{active: hour === uniqueListStartTime.hour && minute === uniqueListStartTime.minute}"
+              :disabled="isDisabled('hour', uniqueListStartTime.hour) || isDisabled('minute', uniqueListStartTime.minute)"
+              :data-key="uniqueListStartTime.hour"
+              v-text="uniqueListStartTime.hour + ':' + uniqueListStartTime.minute"
+              @click="select('hour', uniqueListStartTime.hour); select('minute', uniqueListStartTime.minute)">
+            </li>
             <template v-for="(hr, hIndex) in hours">
               <template v-if="!opts.hideDisabledHours || (opts.hideDisabledHours && !isDisabled('hour', hr))">
                 <template v-for="(m, mIndex) in minutes">
