@@ -35,8 +35,8 @@ export default {
     hourRange: { type: Array },
     minuteRange: { type: Array },
     secondRange: { type: Array },
-    uniqueListStartTime: { type: Object, default: () => ({hour: 0, minute: 0, second: 0}) },
-    uniqueListEndTime: { type: Object, default: () => ({hour: 23, minute: 59, second: 59}) },
+    uniqueListStartTime: { type: Object, default: () => ({hour: 0, minute: 0, second: 0, show: false}) },
+    uniqueListEndTime: { type: Object, default: () => ({hour: 23, minute: 59, second: 59, show: false}) },
 
     hideDisabledHours: { type: Boolean, default: false },
     hideDisabledMinutes: { type: Boolean, default: false },
@@ -218,6 +218,14 @@ export default {
       }
 
       return options
+    },
+
+    showUniqueListEndTime() {
+      return this.uniqueListEndTime.show && (this.uniqueListEndTime.hour == this.hours[this.hours.length-1] && this.uniqueListEndTime.minute > this.minutes[this.minutes.length-1]);
+    },
+
+    showUniqueListStartTime() {
+      return this.uniqueListStartTime.show && (this.uniqueListStartTime.hour == this.hours[0] && this.uniqueListStartTime.minute < this.minutes[0]);
     },
 
     useStringValue () {
@@ -2113,6 +2121,7 @@ export default {
         <template v-for="column in columnsSequence">
           <ul v-if="uniqueList && column === 'hour'" :key="column" class="hours" @scroll="keepFocusing">
             <li class="hint" v-text="hourLabelText"></li>
+            <li v-if="showUniqueListStartTime" v-text="uniqueListStartTime.hour + ':' + uniqueListStartTime.minute"></li>
             <template v-for="(hr, hIndex) in hours">
               <template v-if="!opts.hideDisabledHours || (opts.hideDisabledHours && !isDisabled('hour', hr))">
                 <template v-for="(m, mIndex) in minutes">
@@ -2126,6 +2135,13 @@ export default {
                 </template>
               </template>
             </template>
+            <li v-if="showUniqueListEndTime"
+              :class="{active: hour === uniqueListEndTime.hour && minute === uniqueListEndTime.minute}"
+              :disabled="isDisabled('hour', uniqueListEndTime.hour) || isDisabled('minute', uniqueListEndTime.minute)"
+              :data-key="uniqueListEndTime.hour"
+              v-text="uniqueListEndTime.hour + ':' + uniqueListEndTime.minute"
+              @click="select('hour', uniqueListEndTime.hour); select('minute', uniqueListEndTime.minute)">
+            </li>
           </ul>
           <ul v-if="!uniqueList && column === 'hour'" :key="column" class="hours" @scroll="keepFocusing">
             <li class="hint" v-text="hourLabelText"></li>
